@@ -1,6 +1,6 @@
 # Telkomsel Redeem Automation (Portable)
 
-Aplikasi otomatisasi berbasis Node.js dan Puppeteer untuk melakukan redeem voucher Telkomsel dan pengecekan serial voucher (By.U) melalui browser automation. Aplikasi ini dirancang agar dapat dikompilasi menjadi file `.exe` portable yang dapat berjalan di Windows tanpa perlu instalasi Node.js.
+Aplikasi otomatisasi berbasis Node.js dan Puppeteer untuk melakukan redeem voucher Telkomsel dan pengecekan serial voucher Tsel dan (By.U) melalui browser automation. Aplikasi ini dirancang agar dapat dikompilasi menjadi file `.exe` portable yang dapat berjalan di Windows tanpa perlu instalasi Node.js.
 
 ## Fitur
 
