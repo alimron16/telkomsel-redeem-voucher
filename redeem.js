@@ -598,91 +598,56 @@ app.get("/check-serial", async (req, res) => {
   try {
     const browser = await getBrowser(); // Gunakan browser yang sudah terbuka
     page = await browser.newPage(); // Buka Tab Baru
-    page.setDefaultTimeout(30000);
+    page.setDefaultTimeout(60000);
     await preparePage(page);
 
-    console.log(`?? [${trxid}] Mengecek voucher serial: ${serialNumber}`);
-    // Gunakan navigasi via JS
-    await page.evaluate(() => {
-      window.location.assign("https://www.byu.id/v2/cek-voucher");
-    });
-    await page.waitForSelector('input[name="serialNumber"]', { timeout: 40000 });
+    console.log(`?? [${trxid}] Mengecek voucher Telkomsel: ${serialNumber}`);
+    
+    // Navigasi ke halaman Cek Voucher Telkomsel
+    await page.goto("https://www.telkomsel.com/shops/voucher/check", { waitUntil: "domcontentloaded", timeout: 60000 });
 
-    // Tunggu form serial siap
-    await page.waitForSelector('button[type="submit"]', { timeout: 20000 });
+    const inputSelector = 'input[placeholder="Masukkan Kode Voucher"]';
+    const btnSelector = 'button.btn-primary-submit';
+    // Selector hasil sesuai request user
+    const resultSelector = 'div.error-wrapper-cotent'; 
 
-    // Isi nomor voucher
-    await page.focus('input[name="serialNumber"]');
-    await page.keyboard.type(serialNumber, { delay: Math.floor(Math.random() * 50) + 20 });
-
-    // Klik tombol cek status
-    await page.evaluate(() => {
-      const btn = document.querySelector('button[type="submit"]');
-      if (btn) btn.click();
-    });
-
-    // Tunggu popup atau pesan error muncul (5x percobaan)
-    let popupAppeared = false;
-    for (let i = 0; i < 5; i++) {
-      await randomSleep(1000, 1500);
-      if (await page.$("div.styles_pop-up__content__acjst")) {
-        popupAppeared = true;
-        break;
-      }
-      if (await page.$("p.styles_m-input-group__message__4Tff1")) break;
+    // Tunggu form muncul
+    try {
+        await page.waitForSelector(inputSelector, { visible: true, timeout: 30000 });
+    } catch (e) {
+        return res.json({ trxid, serialNumber, status: "failed", message: "Gagal memuat halaman cek voucher." });
     }
 
-    // Cek apakah popup muncul
-    if (popupAppeared) {
-      const data = await page.evaluate(() => {
-        const title = document.querySelector("p.styles_popup__title__trDN_")?.innerText || "";
-        const status = document.querySelector("span.styles_popup__badge__5GT7E")?.innerText || "";
-        const nomorSeri = document.querySelectorAll("p.styles_popup__row__value__gcxFn")[0]?.innerText || "";
-        const value = document.querySelectorAll("p.styles_popup__row__value__gcxFn")[1]?.innerText || "";
-        const masaBerlaku = document.querySelectorAll("p.styles_popup__row__value__gcxFn")[2]?.innerText || "";
-        return { title, status, nomorSeri, value, masaBerlaku };
-      });
+    // Input Voucher
+    await humanClick(page, inputSelector);
+    await page.evaluate((sel) => { document.querySelector(sel).value = ''; }, inputSelector);
+    await page.type(inputSelector, serialNumber, { delay: 100 });
+    
+    await randomSleep(500, 1000);
 
-      return res.json({
-        trxid,
-        serialNumber,
-        status: "success",
-        data,
-      });
-    }
+    // Klik Tombol Cek
+    await humanClick(page, btnSelector);
 
-    // Kalau popup tidak muncul, cek pesan error
-    const errMsg = await page.$eval(
-      "p.styles_m-input-group__message__4Tff1",
-      (el) => el.innerText.trim()
-    ).catch(() => null);
-
-    if (errMsg) {
-      if (errMsg.includes("tidak valid")) {
+    // Tunggu Hasil
+    try {
+        await page.waitForSelector(resultSelector, { visible: true, timeout: 15000 });
+        const resultText = await page.$eval(resultSelector, el => el.innerText.trim());
+        
         return res.json({
-          trxid,
-          serialNumber,
-          status: "failed",
-          reason: "invalid_serial",
-          message: errMsg,
+            trxid,
+            serialNumber,
+            status: "success",
+            message: resultText
         });
-      }
-      return res.json({
-        trxid,
-        serialNumber,
-        status: "failed",
-        reason: "unknown_error",
-        message: errMsg,
-      });
+    } catch (e) {
+        return res.json({
+            trxid,
+            serialNumber,
+            status: "failed",
+            reason: "timeout",
+            message: "Tidak ada respon hasil dari Telkomsel."
+        });
     }
-
-    return res.json({
-      trxid,
-      serialNumber,
-      status: "failed",
-      reason: "no_popup",
-      message: "Popup status voucher tidak muncul setelah beberapa percobaan.",
-    });
   } catch (e) {
     res.json({
       trxid,

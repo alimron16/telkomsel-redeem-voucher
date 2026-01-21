@@ -5,7 +5,7 @@ Aplikasi otomatisasi berbasis Node.js dan Puppeteer untuk melakukan redeem vouch
 ## Fitur
 
 *   **Redeem Voucher Telkomsel**: Otomatisasi input nomor dan kode voucher di web Telkomsel.
-*   **Cek Serial Voucher**: Pengecekan status voucher By.U berdasarkan serial number.
+*   **Cek Serial Voucher**: Pengecekan status voucher Telkomsel berdasarkan serial number.
 *   **Portable Mode**: Dapat berjalan sebagai `.exe` mandiri.
 *   **Auto-Download Chrome**: Otomatis mengunduh Chromium jika folder `chrome-win` tidak ditemukan.
 *   **Anti-Detect**: Menggunakan teknik manipulasi User-Agent dan fingerprint agar tidak terdeteksi sebagai bot.
@@ -64,7 +64,7 @@ Aplikasi berjalan default di port `3000`.
     http://localhost:3000/redeem?nomor=08123456789&vc=123456789012345
     ```
 
-### 2. Cek Serial Voucher (By.U)
+### 2. Cek Serial Voucher (Telkomsel)
 
 *   **URL**: `/check-serial`
 *   **Method**: `GET`
