@@ -1,0 +1,14 @@
+# Dependencies
+node_modules/
+
+# Browser & Sessions
+chrome-win/
+session_chrome_*/
+
+# Build Output
+*.exe
+pkg-cache/
+
+# Logs & Configs (Optional: keep config if you want template)
+*.log
+npm-debug.log
